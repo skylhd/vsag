@@ -80,6 +80,9 @@ TEST_CASE("RaBitQ Compute", "[ut][RaBitQuantizer]") {
                                                         true,
                                                         unbounded_numeric_error_rate,
                                                         unbounded_related_error_rate);
+            REQUIRE_THROWS(TestComputeCodes<RaBitQuantizer<MetricType::METRIC_TYPE_L2SQR>,
+                                            MetricType::METRIC_TYPE_L2SQR>(
+                quantizer, dim, count, numeric_error, false));
         }
     }
 }

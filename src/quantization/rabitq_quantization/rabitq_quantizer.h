@@ -70,6 +70,9 @@ public:
     inline float
     ComputeImpl(const uint8_t* codes1, const uint8_t* codes2) const;
 
+    inline float
+    ComputeQueryBaseImpl(const uint8_t* query_codes, const uint8_t* base_codes) const;
+
     inline void
     ProcessQueryImpl(const DataType* query, Computer<RaBitQuantizer>& computer) const;
 
@@ -292,24 +295,31 @@ RaBitQuantizer<metric>::DecodeBatchImpl(const uint8_t* codes, DataType* data, ui
 
 template <MetricType metric>
 inline float
-RaBitQuantizer<metric>::ComputeImpl(const uint8_t* codes1, const uint8_t* codes2) const {
+RaBitQuantizer<metric>::ComputeQueryBaseImpl(const uint8_t* query_codes,
+                                             const uint8_t* base_codes) const {
     // codes1 -> query (fp32, sq8, sq4...) + norm
     // codes2 -> base  (binary) + norm + error
-    norm_type base_norm = *((norm_type*)(codes2 + offset_norm_));
-    norm_type query_norm = *((norm_type*)(codes1 + query_offset_norm_));
+    norm_type base_norm = *((norm_type*)(base_codes + offset_norm_));
+    norm_type query_norm = *((norm_type*)(query_codes + query_offset_norm_));
 
-    error_type base_error = *((error_type*)(codes2 + offset_error_));
+    error_type base_error = *((error_type*)(base_codes + offset_error_));
     if (std::abs(base_error) < 1e-5) {
         base_error = (base_error > 0) ? 1.0f : -1.0f;
     }
 
-    float ip_bq_1_32 = RaBitQFloatBinaryIP((DataType*)codes1, codes2, this->dim_);
+    float ip_bq_1_32 = RaBitQFloatBinaryIP((DataType*)query_codes, base_codes, this->dim_);
     float ip_bb_1_32 = base_error;
     float ip_est = ip_bq_1_32 / ip_bb_1_32;
 
     float result = L2_UBE(base_norm, query_norm, ip_est);
 
     return result;
+}
+
+template <MetricType metric>
+inline float
+RaBitQuantizer<metric>::ComputeImpl(const uint8_t* codes1, const uint8_t* codes2) const {
+    throw std::runtime_error("not support use rabitq for build index");
 }
 
 template <MetricType metric>
@@ -346,7 +356,7 @@ void
 RaBitQuantizer<metric>::ComputeDistImpl(Computer<RaBitQuantizer>& computer,
                                         const uint8_t* codes,
                                         float* dists) const {
-    dists[0] = this->ComputeImpl(computer.buf_, codes);
+    dists[0] = this->ComputeQueryBaseImpl(computer.buf_, codes);
 }
 
 template <MetricType metric>

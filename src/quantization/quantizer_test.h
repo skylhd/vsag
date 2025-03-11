@@ -342,5 +342,6 @@ TestSerializeAndDeserialize(Quantizer<T>& quant1,
                                 unbounded_numeric_error_rate,
                                 unbounded_related_error_rate);
         TestEncodeDecodeRaBitQ<T>(quant2, dim, count);
+        REQUIRE_THROWS(TestComputeCodes<T, metric>(quant2, dim, count, error, false));
     }
 }
