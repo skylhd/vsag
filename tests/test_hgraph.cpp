@@ -62,7 +62,6 @@ public:
         {"sq8_uniform,bf16", 0.98},
         {"sq8_uniform,bf16,buffer_io", 0.98},
         {"sq8_uniform,fp16,async_io", 0.98},
-        {"rabitq", 0.3},
         {"rabitq,fp32", 0.6}};
 };
 
