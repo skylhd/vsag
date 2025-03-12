@@ -153,6 +153,7 @@ RaBitQuantizer<metric>::RaBitQuantizer(int dim, Allocator* allocator)
     // query code layout
     this->query_code_size_ = ((sizeof(DataType) * this->dim_) / align_size) * align_size;
     query_offset_norm_ = this->query_code_size_;
+    this->query_code_size_ += ((sizeof(norm_type) + align_size - 1) / align_size) * align_size;
 }
 
 template <MetricType metric>
@@ -319,7 +320,7 @@ RaBitQuantizer<metric>::ComputeQueryBaseImpl(const uint8_t* query_codes,
 template <MetricType metric>
 inline float
 RaBitQuantizer<metric>::ComputeImpl(const uint8_t* codes1, const uint8_t* codes2) const {
-    throw std::runtime_error("not support use rabitq for build index");
+    throw std::runtime_error("building the index is not supported using RabbitQ alone");
 }
 
 template <MetricType metric>
@@ -328,11 +329,8 @@ RaBitQuantizer<metric>::ProcessQueryImpl(const DataType* query,
                                          Computer<RaBitQuantizer>& computer) const {
     try {
         // TODO(ZXY): allow process query with SQ4 or SQ8, implement in ComputeDist and Param
-        size_t align_size = std::max(sizeof(error_type), sizeof(norm_type));
-
-        computer.buf_ =
-            reinterpret_cast<uint8_t*>(this->allocator_->Allocate(query_code_size_ + align_size));
-        std::fill(computer.buf_, computer.buf_ + query_code_size_ + align_size, 0);
+        computer.buf_ = reinterpret_cast<uint8_t*>(this->allocator_->Allocate(query_code_size_));
+        std::fill(computer.buf_, computer.buf_ + query_code_size_, 0);
 
         Vector<DataType> transformed_data(this->dim_, 0, this->allocator_);
 

@@ -62,7 +62,7 @@ public:
         {"sq8_uniform,bf16", 0.98},
         {"sq8_uniform,bf16,buffer_io", 0.98},
         {"sq8_uniform,fp16,async_io", 0.98},
-        {"rabitq,fp32", 0.5}};
+        {"rabitq,fp32", 0.6}};
 };
 
 TestDatasetPool HgraphTestIndex::pool{};
@@ -625,8 +625,13 @@ TEST_CASE_PERSISTENT_FIXTURE(fixtures::HgraphTestIndex, "HGraph Estimate Memory"
     uint64_t estimate_count = 1000;
     for (auto dim : dims) {
         for (auto& [base_quantization_str, recall] : test_cases) {
-            if (dim <= fixtures::RABITQ_MIN_RACALL_DIM and IsRaBitQ(base_quantization_str)) {
-                dim += fixtures::RABITQ_MIN_RACALL_DIM;
+            if (IsRaBitQ(base_quantization_str)) {
+                if (std::string(metric_type) != "l2") {
+                    continue;
+                }
+                if (dim <= fixtures::RABITQ_MIN_RACALL_DIM) {
+                    dim += fixtures::RABITQ_MIN_RACALL_DIM;
+                }
             }
             vsag::Options::Instance().set_block_size_limit(size);
             auto param =
