@@ -13,27 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include "extra_info_interface.h"
 
-#include <string>
+#include <fmt/format-inl.h>
 
-#include "algorithm/hgraph_parameter.h"
-#include "index_common_param.h"
-#include "parameter.h"
-#include "typing.h"
+#include "extra_info_datacell.h"
+#include "inner_string_params.h"
+#include "io/io_headers.h"
+#include "quantization/quantizer_headers.h"
 
 namespace vsag {
-class HGraphSearchParameters {
-public:
-    static HGraphSearchParameters
-    FromJson(const std::string& json_string);
-
-public:
-    int64_t ef_search{30};
-    bool use_reorder{false};
-
-private:
-    HGraphSearchParameters() = default;
-};
+ExtraInfoInterfacePtr
+ExtraInfoInterface::MakeInstance(const ExtraInfoDataCellParamPtr& param,
+                                 const IndexCommonParam& common_param) {
+    return std::make_shared<ExtraInfoDataCell>(param, common_param);
+}
 
 }  // namespace vsag

@@ -19,6 +19,7 @@
 
 #include "data_cell/graph_interface_parameter.h"
 #include "inner_string_params.h"
+#include "vsag/constants.h"
 
 namespace vsag {
 
@@ -63,6 +64,12 @@ HGraphParameter::FromJson(const JsonType& json) {
             this->build_thread_count = build_params[BUILD_THREAD_COUNT];
         }
     }
+
+    CHECK_ARGUMENT(json.contains(HGRAPH_EXTRA_INFO_KEY),
+                   fmt::format("hgraph parameters must contains {}", HGRAPH_EXTRA_INFO_KEY));
+    const auto& extra_info_json = json[HGRAPH_EXTRA_INFO_KEY];
+    this->extra_info_param = std::make_shared<ExtraInfoDataCellParameter>();
+    this->extra_info_param->FromJson(extra_info_json);
 }
 
 JsonType
@@ -79,7 +86,32 @@ HGraphParameter::ToJson() {
 
     json[BUILD_PARAMS_KEY][BUILD_EF_CONSTRUCTION] = this->ef_construction;
     json[BUILD_PARAMS_KEY][BUILD_THREAD_COUNT] = this->build_thread_count;
+    json[HGRAPH_EXTRA_INFO_KEY] = this->extra_info_param->ToJson();
     return json;
 }
 
+// NOLINTBEGIN(readability-simplify-boolean-expr)
+
+HGraphSearchParameters
+HGraphSearchParameters::FromJson(const std::string& json_string) {
+    JsonType params = JsonType::parse(json_string);
+
+    HGraphSearchParameters obj;
+
+    // set obj.ef_search
+    CHECK_ARGUMENT(params.contains(INDEX_TYPE_HGRAPH),
+                   fmt::format("parameters must contains {}", INDEX_TYPE_HGRAPH));
+
+    CHECK_ARGUMENT(
+        params[INDEX_TYPE_HGRAPH].contains(HGRAPH_PARAMETER_EF_RUNTIME),
+        fmt::format(
+            "parameters[{}] must contains {}", INDEX_TYPE_HGRAPH, HGRAPH_PARAMETER_EF_RUNTIME));
+    obj.ef_search = params[INDEX_TYPE_HGRAPH][HGRAPH_PARAMETER_EF_RUNTIME];
+    CHECK_ARGUMENT((1 <= obj.ef_search) and (obj.ef_search <= 1000),
+                   fmt::format("ef_search({}) must in range[1, 1000]", obj.ef_search));
+
+    return obj;
+}
 }  // namespace vsag
+
+// NOLINTEND(readability-simplify-boolean-expr)
