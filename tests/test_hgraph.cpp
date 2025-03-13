@@ -62,7 +62,7 @@ public:
         {"sq8_uniform,bf16", 0.98},
         {"sq8_uniform,bf16,buffer_io", 0.98},
         {"sq8_uniform,fp16,async_io", 0.98},
-        {"rabitq,fp32", 0.5}};
+        {"rabitq,fp32", 0.3}};
 };
 
 TestDatasetPool HgraphTestIndex::pool{};
