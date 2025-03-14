@@ -163,7 +163,7 @@ public:
 
     tl::expected<void, Error>
     GetMinAndMaxId(int64_t &min_id, int64_t &max_id) const override {
-        SAFE_CALL(return this->inner_index_->getMinAndMaxId(min_id, max_id));
+        SAFE_CALL(return this->inner_index_->GetMinAndMaxId(min_id, max_id));
     }
 
     tl::expected<void, Error>
