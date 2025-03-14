@@ -287,6 +287,11 @@ public:
     }
 
     void
+    getMinAndMaxId(int64_t &min_id, int64_t &max_id) override {
+        // donothing
+    }
+
+    void
     copyDataByLabel(LabelType label, void* data_point) override {
         std::unique_lock lock_table(label_lookup_lock);
 
