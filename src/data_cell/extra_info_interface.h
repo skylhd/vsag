@@ -101,7 +101,7 @@ public:
 
 public:
     InnerIdType total_count_{0};
-    InnerIdType max_capacity_{1000000};
+    InnerIdType max_capacity_{800};
     uint64_t extra_info_size_{0};
 };
 

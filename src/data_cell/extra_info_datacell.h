@@ -29,12 +29,14 @@ namespace vsag {
 /*
 * thread unsafe
 */
+template <typename IOTmpl>
 class ExtraInfoDataCell : public ExtraInfoInterface {
 public:
     ExtraInfoDataCell() = default;
 
-    explicit ExtraInfoDataCell(const ExtraInfoDataCellParamPtr& io_param,
-                               const IndexCommonParam& common_param);
+    explicit ExtraInfoDataCell(const IOParamPtr& io_param,
+                               const IndexCommonParam& common_param,
+                               uint64_t extra_info_size);
 
     void
     InsertExtraInfo(const char* extra_info, InnerIdType idx) override;
@@ -78,12 +80,12 @@ public:
     Deserialize(StreamReader& reader) override;
 
     inline void
-    SetIO(std::shared_ptr<BasicIO<MemoryBlockIO>> io) {
+    SetIO(std::shared_ptr<BasicIO<IOTmpl>> io) {
         this->io_ = io;
     }
 
 public:
-    std::shared_ptr<BasicIO<MemoryBlockIO>> io_{nullptr};
+    std::shared_ptr<BasicIO<IOTmpl>> io_{nullptr};
 
     Allocator* const allocator_{nullptr};
 
@@ -96,4 +98,155 @@ private:
 
     std::shared_ptr<MemoryBlockIO> force_in_memory_io_{};
 };
+
+template <typename IOTmpl>
+ExtraInfoDataCell<IOTmpl>::ExtraInfoDataCell(const IOParamPtr& io_param,
+                                             const IndexCommonParam& common_param,
+                                             uint64_t extra_info_size)
+    : allocator_(common_param.allocator_.get()) {
+    this->extra_info_size_ = extra_info_size;
+    this->io_ = std::make_shared<IOTmpl>(io_param, common_param);
+    this->force_in_memory_io_ =
+        std::make_shared<MemoryBlockIO>(allocator_, Options::Instance().block_size_limit());
+}
+
+template <typename IOTmpl>
+void
+ExtraInfoDataCell<IOTmpl>::InsertExtraInfo(const char* extra_info, InnerIdType idx) {
+    if (idx == std::numeric_limits<InnerIdType>::max()) {
+        idx = total_count_;
+        ++total_count_;
+    } else {
+        total_count_ = std::max(total_count_, idx + 1);
+    }
+
+    if (this->force_in_memory_) {
+        force_in_memory_io_->Write(
+            reinterpret_cast<const uint8_t*>(extra_info),
+            extra_info_size_,
+            static_cast<uint64_t>(idx) * static_cast<uint64_t>(extra_info_size_));
+    } else {
+        io_->Write(reinterpret_cast<const uint8_t*>(extra_info),
+                   extra_info_size_,
+                   static_cast<uint64_t>(idx) * static_cast<uint64_t>(extra_info_size_));
+    }
+}
+
+template <typename IOTmpl>
+void
+ExtraInfoDataCell<IOTmpl>::BatchInsertExtraInfo(const char* extra_infos,
+                                                InnerIdType count,
+                                                InnerIdType* idx) {
+    if (idx == nullptr) {
+        // length of extra info is fixed currently
+        if (this->force_in_memory_) {
+            force_in_memory_io_->Write(
+                reinterpret_cast<const uint8_t*>(extra_infos),
+                static_cast<uint64_t>(count) * static_cast<uint64_t>(extra_info_size_),
+                static_cast<uint64_t>(total_count_) * static_cast<uint64_t>(extra_info_size_));
+        } else {
+            io_->Write(
+                reinterpret_cast<const uint8_t*>(extra_infos),
+                static_cast<uint64_t>(count) * static_cast<uint64_t>(extra_info_size_),
+                static_cast<uint64_t>(total_count_) * static_cast<uint64_t>(extra_info_size_));
+        }
+        total_count_ += count;
+    } else {
+        for (int64_t i = 0; i < count; ++i) {
+            this->InsertExtraInfo(extra_infos + extra_info_size_ * i, idx[i]);
+        }
+    }
+}
+
+template <typename IOTmpl>
+void
+ExtraInfoDataCell<IOTmpl>::trans_from_memory_io() {
+    int64_t max_size = static_cast<int64_t>(this->extra_info_size_) * this->total_count_;
+    constexpr uint64_t block_size = 1024 * 1024;
+    uint64_t offset = 0;
+    bool need_release = false;
+    while (max_size > block_size) {
+        auto data = this->force_in_memory_io_->Read(block_size, offset, need_release);
+        this->io_->Write(data, block_size, offset);
+        max_size -= block_size;
+        offset += block_size;
+        if (need_release) {
+            this->force_in_memory_io_->Release(data);
+        }
+    }
+    if (max_size > 0) {
+        auto data = this->force_in_memory_io_->Read(max_size, offset, need_release);
+        this->io_->Write(data, max_size, offset);
+        if (need_release) {
+            this->force_in_memory_io_->Release(data);
+        }
+    }
+}
+
+template <typename IOTmpl>
+void
+ExtraInfoDataCell<IOTmpl>::EnableForceInMemory() {
+    if (this->TotalCount() != 0) {
+        throw std::runtime_error("EnableForceInMemory must with empty extra info datacell");
+    }
+    this->force_in_memory_ = true;
+}
+
+template <typename IOTmpl>
+void
+ExtraInfoDataCell<IOTmpl>::DisableForceInMemory() {
+    this->force_in_memory_ = false;
+    this->trans_from_memory_io();
+}
+
+template <typename IOTmpl>
+bool
+ExtraInfoDataCell<IOTmpl>::InMemory() const {
+    return this->io_->InMemory();
+}
+
+template <typename IOTmpl>
+const char*
+ExtraInfoDataCell<IOTmpl>::GetExtraInfoById(InnerIdType id, bool& need_release) const {
+    if (force_in_memory_) {
+        return reinterpret_cast<const char*>(force_in_memory_io_->Read(
+            extra_info_size_,
+            static_cast<uint64_t>(id) * static_cast<uint64_t>(extra_info_size_),
+            need_release));
+    } else {
+        return reinterpret_cast<const char*>(
+            io_->Read(extra_info_size_,
+                      static_cast<uint64_t>(id) * static_cast<uint64_t>(extra_info_size_),
+                      need_release));
+    }
+}
+
+template <typename IOTmpl>
+bool
+ExtraInfoDataCell<IOTmpl>::GetExtraInfoById(InnerIdType id, char* extra_info) const {
+    if (force_in_memory_) {
+        return force_in_memory_io_->Read(
+            extra_info_size_,
+            static_cast<uint64_t>(id) * static_cast<uint64_t>(extra_info_size_),
+            reinterpret_cast<uint8_t*>(extra_info));
+    } else {
+        return io_->Read(extra_info_size_,
+                         static_cast<uint64_t>(id) * static_cast<uint64_t>(extra_info_size_),
+                         reinterpret_cast<uint8_t*>(extra_info));
+    }
+}
+
+template <typename IOTmpl>
+void
+ExtraInfoDataCell<IOTmpl>::Serialize(StreamWriter& writer) {
+    ExtraInfoInterface::Serialize(writer);
+    this->io_->Serialize(writer);
+}
+
+template <typename IOTmpl>
+void
+ExtraInfoDataCell<IOTmpl>::Deserialize(StreamReader& reader) {
+    ExtraInfoInterface::Deserialize(reader);
+    this->io_->Deserialize(reader);
+}
 }  // namespace vsag

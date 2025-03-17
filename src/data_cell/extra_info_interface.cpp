@@ -23,10 +23,24 @@
 #include "quantization/quantizer_headers.h"
 
 namespace vsag {
+template <typename IOTemp>
+static ExtraInfoInterfacePtr
+make_instance(const ExtraInfoDataCellParamPtr& param, const IndexCommonParam& common_param) {
+    auto& io_param = param->io_parameter;
+    uint64_t extra_info_size = param->extra_info_size;
+    return std::make_shared<ExtraInfoDataCell<IOTemp>>(io_param, common_param, extra_info_size);
+}
+
 ExtraInfoInterfacePtr
 ExtraInfoInterface::MakeInstance(const ExtraInfoDataCellParamPtr& param,
                                  const IndexCommonParam& common_param) {
-    return std::make_shared<ExtraInfoDataCell>(param, common_param);
+    auto io_type_name = param->io_parameter->GetTypeName();
+    if (io_type_name == IO_TYPE_VALUE_BLOCK_MEMORY_IO) {
+        return make_instance<MemoryBlockIO>(param, common_param);
+    } else {
+        throw std::invalid_argument(fmt::format("Extra Info not support {} IO type", io_type_name));
+    }
+    return nullptr;
 }
 
 }  // namespace vsag
