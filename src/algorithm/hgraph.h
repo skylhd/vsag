@@ -110,7 +110,7 @@ public:
     CalDistanceById(const float* query, const int64_t* ids, int64_t count) const override;
 
     tl::expected<void, Error>
-    getMinAndMaxId(int64_t &min_id, int64_t &max_id) const;
+    GetMinAndMaxId(int64_t &min_id, int64_t &max_id) const override;
 
     inline void
     SetBuildThreadsCount(uint64_t count) {

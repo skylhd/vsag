@@ -67,6 +67,11 @@ hnsw_iter_filter() {
         exit(-1);
     }
 
+    int64_t min, max;
+    index->GetMinAndMaxId(min, max);
+    std::cout << "Min: " << min << " "
+              << "Max: " << max << std::endl;
+
     /******************* KnnSearch For HNSW Index *****************/
     auto query_vector = new float[dim];
     for (int64_t i = 0; i < dim; ++i) {
@@ -238,6 +243,11 @@ hgraph_iter_filter() {
         std::cerr << "Failed to build index: internalError" << std::endl;
         exit(-1);
     }
+
+    int64_t min, max;
+    index->GetMinAndMaxId(min, max);
+    std::cout << "Min: " << min << " "
+              << "Max: " << max << std::endl;
 
     /******************* Prepare Query Dataset *****************/
     std::vector<float> query_vector(dim);

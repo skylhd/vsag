@@ -550,7 +550,7 @@ HGraph::CalDistanceById(const float* query, const int64_t* ids, int64_t count) c
 }
 
 tl::expected<void, Error>
-HGraph::getMinAndMaxId(int64_t &min_id, int64_t &max_id) const {
+HGraph::GetMinAndMaxId(int64_t &min_id, int64_t &max_id) const {
     min_id = INT64_MAX;
     max_id = INT64_MIN;
     std::shared_lock<std::shared_mutex> lock(this->label_lookup_mutex_);
