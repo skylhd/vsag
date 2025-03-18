@@ -32,6 +32,9 @@ public:
     void
     TestSerializeAndDeserialize(ExtraInfoInterfacePtr other);
 
+    void
+    TestForceInMemory(uint64_t force_count);
+
 public:
     ExtraInfoInterfacePtr extra_info_{nullptr};
 };

@@ -253,8 +253,7 @@ HGraph::EstimateMemory(uint64_t num_elements) const {
     }
 
     if (extra_info_size_ > 0 && this->extra_infos_ != nullptr && this->extra_infos_->InMemory()) {
-        auto extra_info_memory =
-            this->extra_infos_->ExtraInfoSize() * this->extra_infos_->TotalCount();
+        auto extra_info_memory = this->extra_infos_->ExtraInfoSize() * element_count;
         estimate_memory += block_memory_ceil(extra_info_memory, block_size);
     }
 

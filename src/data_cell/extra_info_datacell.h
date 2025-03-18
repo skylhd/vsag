@@ -49,6 +49,12 @@ public:
         this->max_capacity_ = std::max(capacity, this->total_count_);
     }
 
+    InnerIdType
+    GetMaxCapacity() override {
+        this->max_capacity_ = std::max(this->max_capacity_, this->total_count_);
+        return this->max_capacity_;
+    };
+
     void
     Prefetch(InnerIdType id) override {
         if (this->force_in_memory_) {
@@ -66,9 +72,6 @@ public:
 
     void
     DisableForceInMemory() override;
-
-    const char*
-    GetExtraInfoById(InnerIdType id, bool& need_release) const override;
 
     bool
     GetExtraInfoById(InnerIdType id, char* extra_info) const override;
@@ -203,22 +206,6 @@ template <typename IOTmpl>
 bool
 ExtraInfoDataCell<IOTmpl>::InMemory() const {
     return this->io_->InMemory();
-}
-
-template <typename IOTmpl>
-const char*
-ExtraInfoDataCell<IOTmpl>::GetExtraInfoById(InnerIdType id, bool& need_release) const {
-    if (force_in_memory_) {
-        return reinterpret_cast<const char*>(force_in_memory_io_->Read(
-            extra_info_size_,
-            static_cast<uint64_t>(id) * static_cast<uint64_t>(extra_info_size_),
-            need_release));
-    } else {
-        return reinterpret_cast<const char*>(
-            io_->Read(extra_info_size_,
-                      static_cast<uint64_t>(id) * static_cast<uint64_t>(extra_info_size_),
-                      need_release));
-    }
 }
 
 template <typename IOTmpl>

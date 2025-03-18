@@ -686,6 +686,7 @@ TEST_CASE_PERSISTENT_FIXTURE(fixtures::HgraphTestIndex, "HGraph With Extra Info"
                     TestSearchWithExtraInfo(index, dataset, search_param, extra_info_size, recall);
                 }
             }
+            TestEstimateMemory(name, param, dataset);
             vsag::Options::Instance().set_block_size_limit(origin_size);
         }
     }

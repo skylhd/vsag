@@ -54,6 +54,11 @@ public:
         this->max_capacity_ = capacity;
     };
 
+    virtual InnerIdType
+    GetMaxCapacity() {
+        return this->max_capacity_;
+    };
+
     virtual const char*
     GetExtraInfoById(InnerIdType id, bool& need_release) const {
         return nullptr;

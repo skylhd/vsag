@@ -23,6 +23,7 @@
 #include "default_allocator.h"
 #include "extra_info_interface_test.h"
 #include "fixtures.h"
+#include "parameter_test.h"
 #include "safe_allocator.h"
 
 using namespace vsag;
@@ -33,12 +34,16 @@ TestExtraInfoDataCell(ExtraInfoDataCellParamPtr& param, IndexCommonParam& common
     auto extra_info = ExtraInfoInterface::MakeInstance(param, common_param);
 
     ExtraInfoInterfaceTest test(extra_info);
+    test.TestForceInMemory(count);
+
     test.BasicTest(count);
+
     auto other = ExtraInfoInterface::MakeInstance(param, common_param);
     test.TestSerializeAndDeserialize(other);
 }
 
 TEST_CASE("ExtraInfoDataCell Basic Test", "[ut][ExtraInfoDataCell] ") {
+    logger::set_level(logger::level::debug);
     auto allocator = SafeAllocator::FactoryDefaultAllocator();
     uint64_t extra_info_sizes[3] = {32, 128, 512};
     int dim = 512;
@@ -54,9 +59,13 @@ TEST_CASE("ExtraInfoDataCell Basic Test", "[ut][ExtraInfoDataCell] ") {
         )";
     for (auto& extra_info_size : extra_info_sizes) {
         auto param_str = fmt::format(param_temp, extra_info_size);
+        logger::debug("param_str: {}", param_str);
         auto param_json = JsonType::parse(param_str);
+        logger::debug("param_json: {}", param_json.dump());
         auto param = std::make_shared<ExtraInfoDataCellParameter>();
         param->FromJson(param_json);
+        vsag::ParameterTest::TestToJson(param);
+        logger::debug("param->ToJson(): {}", param->ToJson().dump());
 
         IndexCommonParam common_param;
         common_param.allocator_ = allocator;
