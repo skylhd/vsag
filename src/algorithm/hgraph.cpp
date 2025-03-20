@@ -560,6 +560,29 @@ HGraph::GetMinAndMaxId(int64_t &min_id, int64_t &max_id) const {
     return {};
 }
 
+const char *
+HGraph::GetExtraInfoByIds(const int64_t* ids, int64_t count) const {
+    char* extra_infos = nullptr;
+    if (extra_info_size_ > 0 && this->extra_infos_ != nullptr) {
+        extra_infos = (char*)allocator_->Allocate(extra_info_size_ * count);
+        {
+            std::shared_lock<std::shared_mutex> lock(this->label_lookup_mutex_);
+            for (int64_t i = 0; i < count; ++i) {
+                auto iter = this->label_table_->label_remap_.find(ids[i]);
+                if (iter == this->label_table_->label_remap_.end()) {
+                    logger::error(fmt::format("failed to find id: {}", ids[i]));
+                    memset(extra_infos + extra_info_size_ * i, 0, extra_info_size_);
+                    continue;
+                }
+                auto new_id = iter->second;
+                this->extra_infos_->GetExtraInfoById(new_id,
+                                                     extra_infos + extra_info_size_ * i);
+            }
+        }
+    }
+    return extra_infos;
+}
+
 void
 HGraph::add_one_point(const float* data, int level, InnerIdType inner_id) {
     MaxHeap result(allocator_);

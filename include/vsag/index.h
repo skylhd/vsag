@@ -370,6 +370,11 @@ public:
         throw std::runtime_error("Index doesn't support merge");
     }
 
+    const char *
+    GetExtraInfoByIds(const int64_t* ids, int64_t count) const {
+        throw std::runtime_error("Index doesn't support GetExtraInfoByIds");
+    }
+
 public:
     // [serialize/deserialize with binaryset]
 

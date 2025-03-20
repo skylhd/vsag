@@ -205,6 +205,11 @@ public:
         return this->label_table_->CheckLabel(id);
     }
 
+    virtual const char *
+    GetExtraInfoByIds(const int64_t* ids, int64_t count) const {
+        throw std::runtime_error("Index doesn't support GetExtraInfoByIds");
+    }
+
 public:
     LabelTablePtr label_table_{nullptr};
 

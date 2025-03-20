@@ -118,6 +118,9 @@ public:
         this->build_pool_->set_pool_size(count);
     }
 
+    const char *
+    GetExtraInfoByIds(const int64_t* ids, int64_t count) const override;
+
 private:
     inline int
     get_random_level() {
