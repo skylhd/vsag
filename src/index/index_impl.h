@@ -242,6 +242,11 @@ public:
         return this->inner_index_->CheckIdExist(id);
     }
 
+    const char *
+    GetExtraInfoByIds(const int64_t* ids, int64_t count) const override {
+        return this->inner_index_->GetExtraInfoByIds(ids, count);
+    }
+
 private:
     std::shared_ptr<InnerIndexInterface> inner_index_{nullptr};
 
