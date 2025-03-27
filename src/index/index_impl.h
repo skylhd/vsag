@@ -172,6 +172,11 @@ public:
         SAFE_CALL(return this->inner_index_->CalDistanceById(query, ids, count));
     }
 
+    virtual tl::expected<void, Error>
+    GetExtraInfoByIds(const int64_t* ids, int64_t count, char* extra_infos) const override {
+        SAFE_CALL(this->inner_index_->GetExtraInfoByIds(ids, count, extra_infos));
+    };
+
     tl::expected<void, Error>
     GetMinAndMaxId(int64_t &min_id, int64_t &max_id) const override {
         SAFE_CALL(return this->inner_index_->GetMinAndMaxId(min_id, max_id));
@@ -240,11 +245,6 @@ public:
     [[nodiscard]] bool
     CheckIdExist(int64_t id) const override {
         return this->inner_index_->CheckIdExist(id);
-    }
-
-    const char *
-    GetExtraInfoByIds(const int64_t* ids, int64_t count) const override {
-        return this->inner_index_->GetExtraInfoByIds(ids, count);
     }
 
 private:

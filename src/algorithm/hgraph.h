@@ -111,15 +111,15 @@ public:
 
     tl::expected<void, Error>
     GetMinAndMaxId(int64_t &min_id, int64_t &max_id) const override;
+    
+    void
+    GetExtraInfoByIds(const int64_t* ids, int64_t count, char* extra_infos) const override;
 
     inline void
     SetBuildThreadsCount(uint64_t count) {
         this->build_thread_count_ = count;
         this->build_pool_->set_pool_size(count);
     }
-
-    const char *
-    GetExtraInfoByIds(const int64_t* ids, int64_t count) const override;
 
 private:
     inline int
