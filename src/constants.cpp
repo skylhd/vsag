@@ -119,6 +119,7 @@ const char* const SERIALIZE_MAGIC_NUM = "MAGIC_NUM";
 const char* const SERIALIZE_VERSION = "VERSION";
 
 const char* const SQ4_UNIFORM_TRUNC_RATE = "sq4_uniform_trunc_rate";
+const char* const RABITQ_PCA_DIM = "rabitq_pca_dim";
 
 const char* const HGRAPH_USE_REORDER = HGRAPH_USE_REORDER_KEY;
 const char* const HGRAPH_BASE_QUANTIZATION_TYPE = "base_quantization_type";
