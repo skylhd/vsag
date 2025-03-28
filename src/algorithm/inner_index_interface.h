@@ -150,8 +150,13 @@ public:
     }
 
     virtual void
+    GetExtraInfoByIds(const int64_t* ids, int64_t count, char* extra_infos) const {
+        throw std::runtime_error("Index doesn't support GetExtraInfoByIds");
+    }
+
+    virtual void
     Merge(const std::vector<MergeUnit>& merge_units) {
-        throw std::runtime_error("Index doesn't support merge");
+        throw std::runtime_error("Index doesn't support Merge");
     }
 
     [[nodiscard]] virtual BinarySet
@@ -203,11 +208,6 @@ public:
     [[nodiscard]] virtual bool
     CheckIdExist(int64_t id) const {
         return this->label_table_->CheckLabel(id);
-    }
-
-    virtual const char *
-    GetExtraInfoByIds(const int64_t* ids, int64_t count) const {
-        throw std::runtime_error("Index doesn't support GetExtraInfoByIds");
     }
 
 public:
