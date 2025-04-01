@@ -58,7 +58,8 @@ public:
 public:
     int64_t ef_search{30};
     bool use_reorder{false};
-
+    float skip_ratio{0.7f};
+    bool use_inner_id_filter{false};
 private:
     HGraphSearchParameters() = default;
 };

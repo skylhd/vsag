@@ -113,7 +113,7 @@ public:
     GetMinAndMaxId(int64_t &min_id, int64_t &max_id) const override;
     
     void
-    GetExtraInfoByIds(const int64_t* ids, int64_t count, char* extra_infos) const override;
+    GetExtraInfoByIds(const int64_t* ids, int64_t count, char* extra_infos, bool is_inner_id) const override;
 
     inline void
     SetBuildThreadsCount(uint64_t count) {

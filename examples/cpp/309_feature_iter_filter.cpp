@@ -96,7 +96,7 @@ hnsw_iter_filter() {
     class MyFilter : public vsag::Filter {
     public:
         bool
-        CheckValid(int64_t id) const override {
+        CheckValid(int64_t id, bool is_inner_id = false) const override {
             return id % 2;
         }
 
@@ -263,7 +263,7 @@ hgraph_iter_filter() {
     class MyFilter : public vsag::Filter {
     public:
         bool
-        CheckValid(int64_t id) const override {
+        CheckValid(int64_t id, bool is_inner_id = false) const override {
             return id % 2;
         }
 

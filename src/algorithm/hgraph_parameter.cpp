@@ -111,6 +111,12 @@ HGraphSearchParameters::FromJson(const std::string& json_string) {
         fmt::format(
             "parameters[{}] must contains {}", INDEX_TYPE_HGRAPH, HGRAPH_PARAMETER_EF_RUNTIME));
     obj.ef_search = params[INDEX_TYPE_HGRAPH][HGRAPH_PARAMETER_EF_RUNTIME];
+    if (params[INDEX_TYPE_HGRAPH].contains(HGRAPH_USE_INNER_ID_FILTER)) {
+        obj.use_inner_id_filter = params[INDEX_TYPE_HGRAPH][HGRAPH_USE_INNER_ID_FILTER];
+    }
+    if (params[INDEX_TYPE_HGRAPH].contains(HNSW_PARAMETER_SKIP_RATIO)) {
+        obj.skip_ratio = params[INDEX_TYPE_HGRAPH][HNSW_PARAMETER_SKIP_RATIO];
+    }
     CHECK_ARGUMENT((1 <= obj.ef_search) and (obj.ef_search <= 1000),
                    fmt::format("ef_search({}) must in range[1, 1000]", obj.ef_search));
 

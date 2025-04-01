@@ -354,7 +354,7 @@ public:
      * (default behavior for base class).
      */
     virtual tl::expected<void, Error>
-    GetExtraInfoByIds(const int64_t* ids, int64_t count, char* extra_infos) const {
+    GetExtraInfoByIds(const int64_t* ids, int64_t count, char* extra_infos, bool is_inner_id) const {
         throw std::runtime_error("Index doesn't support GetExtraInfoByIds");
     };
 

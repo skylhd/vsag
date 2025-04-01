@@ -36,7 +36,7 @@ public:
       * @return true if vector is valid, otherwise false
       */
     [[nodiscard]] virtual bool
-    CheckValid(int64_t id) const = 0;
+    CheckValid(int64_t id, bool use_inner_id = false) const = 0;
 
     /**
       * @brief Get valid ratio of pre-filter, 1.0 means all the vectors valid, 

@@ -38,6 +38,7 @@ public:
     float skip_ratio{0.8F};
     InnerSearchMode search_mode{KNN_SEARCH};
     int range_search_limit_size{-1};
+    bool use_inner_id_filter{false};
 };
 
 constexpr float THRESHOLD_ERROR = 2e-6;
@@ -64,6 +65,7 @@ private:
           const std::pair<float, uint64_t>& current_node_pair,
           const FilterPtr& filter,
           float skip_ratio,
+          bool use_inner_id_filter,
           Vector<InnerIdType>& to_be_visited_rid,
           Vector<InnerIdType>& to_be_visited_id) const;
 

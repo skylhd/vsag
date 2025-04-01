@@ -33,7 +33,7 @@ public:
     UniqueFilter(const BitsetPtr& bitset) : bitset_(bitset), is_bitset_filter_(true){};
 
     [[nodiscard]] bool
-    CheckValid(int64_t id) const override {
+    CheckValid(int64_t id, bool use_inner_id = false) const override {
         if (is_bitset_filter_) {
             int64_t bit_index = id & ROW_ID_MASK;
             return not bitset_->Test(bit_index);
@@ -54,8 +54,8 @@ public:
         : filter_impl_(filter_impl), label_table_(label_table){};
 
     [[nodiscard]] bool
-    CheckValid(int64_t inner_id) const override {
-        return filter_impl_->CheckValid(label_table_.GetLabelById(inner_id));
+    CheckValid(int64_t inner_id, bool use_inner_id = false) const override {
+        return filter_impl_->CheckValid(use_inner_id ? inner_id : label_table_.GetLabelById(inner_id), use_inner_id);
     }
 
     [[nodiscard]] float

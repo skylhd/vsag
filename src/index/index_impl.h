@@ -173,8 +173,8 @@ public:
     }
 
     virtual tl::expected<void, Error>
-    GetExtraInfoByIds(const int64_t* ids, int64_t count, char* extra_infos) const override {
-        SAFE_CALL(this->inner_index_->GetExtraInfoByIds(ids, count, extra_infos));
+    GetExtraInfoByIds(const int64_t* ids, int64_t count, char* extra_infos, bool is_inner_id) const override {
+        SAFE_CALL(this->inner_index_->GetExtraInfoByIds(ids, count, extra_infos, is_inner_id));
     };
 
     tl::expected<void, Error>

@@ -31,6 +31,7 @@ BasicSearcher::visit(const GraphInterfacePtr& graph,
                      const std::pair<float, uint64_t>& current_node_pair,
                      const FilterPtr& filter,
                      float skip_ratio,
+                     bool use_inner_id_filter,
                      Vector<InnerIdType>& to_be_visited_rid,
                      Vector<InnerIdType>& to_be_visited_id) const {
     LinearCongruentialGenerator generator;
@@ -57,7 +58,7 @@ BasicSearcher::visit(const GraphInterfacePtr& graph,
         }
         if (not vl->Get(neighbors[i])) {
             if (not filter || count_no_visited == 0 || generator.NextFloat() > skip_threshold ||
-                filter->CheckValid(neighbors[i])) {
+                filter->CheckValid(neighbors[i], use_inner_id_filter)) {
                 to_be_visited_rid[count_no_visited] = i;
                 to_be_visited_id[count_no_visited] = neighbors[i];
                 count_no_visited++;
@@ -100,6 +101,7 @@ BasicSearcher::search_impl(const GraphInterfacePtr& graph,
     auto computer = flatten->FactoryComputer(query);
 
     auto is_id_allowed = inner_search_param.is_inner_id_allowed;
+    auto use_inner_id_filter = inner_search_param.use_inner_id_filter;
     auto ep = inner_search_param.ep;
     auto ef = inner_search_param.ef;
 
@@ -136,7 +138,7 @@ BasicSearcher::search_impl(const GraphInterfacePtr& graph,
         }
     } else {
         flatten->Query(&dist, computer, &ep, 1);
-        if (not is_id_allowed || is_id_allowed->CheckValid(ep)) {
+        if (not is_id_allowed || is_id_allowed->CheckValid(ep, use_inner_id_filter)) {
             top_candidates.emplace(dist, ep);
             lower_bound = top_candidates.top().first;
         }
@@ -169,6 +171,7 @@ BasicSearcher::search_impl(const GraphInterfacePtr& graph,
                                  current_node_pair,
                                  inner_search_param.is_inner_id_allowed,
                                  inner_search_param.skip_ratio,
+                                 inner_search_param.use_inner_id_filter,
                                  to_be_visited_rid,
                                  to_be_visited_id);
 
@@ -185,7 +188,7 @@ BasicSearcher::search_impl(const GraphInterfacePtr& graph,
                 }
                 candidate_set.emplace(-dist, to_be_visited_id[i]);
                 // flatten->Prefetch(candidate_set.top().second);
-                if (not is_id_allowed || is_id_allowed->CheckValid(to_be_visited_id[i])) {
+                if (not is_id_allowed || is_id_allowed->CheckValid(to_be_visited_id[i], use_inner_id_filter)) {
                     top_candidates.emplace(dist, to_be_visited_id[i]);
                 }
 

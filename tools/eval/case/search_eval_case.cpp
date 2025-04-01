@@ -34,7 +34,7 @@ public:
     }
 
     bool
-    CheckValid(int64_t id) const override {
+    CheckValid(int64_t id, bool is_inner_id) const override {
         return train_labels_[id] == test_label_;
     }
 

@@ -367,7 +367,7 @@ public:
     }
 
     bool
-    CheckValid(int64_t id) const override {
+    CheckValid(int64_t id, bool is_inner_id) const override {
         return not filter_func_(id);
     }
 
@@ -972,7 +972,7 @@ TestIndex::TestGetExtraInfoById(const TestIndex::IndexPtr& index,
     memcpy(ids.data(), dataset->base_->GetIds(), count * sizeof(int64_t));
     std::random_shuffle(ids.begin(), ids.end());
     std::vector<char> extra_infos(count * extra_info_size);
-    auto result = index->GetExtraInfoByIds(ids.data(), count, extra_infos.data());
+    auto result = index->GetExtraInfoByIds(ids.data(), count, extra_infos.data(), false);
     REQUIRE(result.has_value());
     for (int64_t i = 0; i < count; ++i) {
         REQUIRE(

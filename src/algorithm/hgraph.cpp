@@ -174,6 +174,8 @@ HGraph::KnnSearch(const DatasetPtr& query,
         search_param.ef = std::max(params.ef_search, k);
         search_param.is_inner_id_allowed = ft;
         search_param.topk = static_cast<int64_t>(search_param.ef);
+        search_param.skip_ratio = params.skip_ratio;
+        search_param.use_inner_id_filter = params.use_inner_id_filter;
         search_result = this->search_one_graph(query->GetFloat32Vectors(),
                                                this->bottom_graph_,
                                                this->basic_flatten_codes_,
@@ -565,19 +567,23 @@ HGraph::GetMinAndMaxId(int64_t &min_id, int64_t &max_id) const {
 }
 
 void
-HGraph::GetExtraInfoByIds(const int64_t* ids, int64_t count, char* extra_infos) const {
+HGraph::GetExtraInfoByIds(const int64_t* ids, int64_t count, char* extra_infos, bool is_inner_id) const {
     if (this->extra_infos_ == nullptr || extra_infos == nullptr) {
         throw VsagException(ErrorType::UNSUPPORTED_INDEX_OPERATION, "extra_info is NULL");
     }
     std::shared_lock<std::shared_mutex> lock(this->label_lookup_mutex_);
     for (int64_t i = 0; i < count; ++i) {
-        auto iter = this->label_table_->label_remap_.find(ids[i]);
-        if (iter == this->label_table_->label_remap_.end()) {
-            logger::error(fmt::format("failed to find id: {}", ids[i]));
-            memset(extra_infos + i * extra_info_size_, 0, extra_info_size_);
-            continue;
+        auto inner_id = ids[i];
+        if (!is_inner_id) {
+            auto iter = this->label_table_->label_remap_.find(ids[i]);
+            if (iter == this->label_table_->label_remap_.end()) {
+                logger::error(fmt::format("failed to find id: {}", ids[i]));
+                memset(extra_infos + i * extra_info_size_, 0, extra_info_size_);
+                continue;
+            }
+            inner_id = iter->second;
         }
-        this->extra_infos_->GetExtraInfoById(iter->second, extra_infos + i * extra_info_size_);
+        this->extra_infos_->GetExtraInfoById(inner_id, extra_infos + i * extra_info_size_);
     }
 }
 
