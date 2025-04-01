@@ -161,7 +161,6 @@ FP32ComputeL2Sqr(const float* query, const float* codes, uint64_t dim) {
     if (dim - i > 0) {
         l2 += avx2::FP32ComputeL2Sqr(query + i, codes + i, dim - i);
     }
-    l2 += avx2::FP32ComputeL2Sqr(query + n * 16, codes + n * 16, dim - n * 16);
     return l2;
 #else
     return avx2::FP32ComputeL2Sqr(query, codes, dim);
