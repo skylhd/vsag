@@ -129,6 +129,10 @@ HGraph::KnnSearch(const DatasetPtr& query,
     if (filter != nullptr) {
         ft = std::make_shared<CommonInnerIdFilter>(filter, *this->label_table_);
     }
+    std::shared_ptr<CommonExtraInfoFilter> exft = nullptr;
+    if (filter != nullptr) {
+        exft = std::make_shared<CommonExtraInfoFilter>(filter, this->extra_infos_);
+    }
     int64_t query_dim = query->GetDim();
     CHECK_ARGUMENT(query_dim == dim_,
                    fmt::format("query.dim({}) must be equal to index.dim({})", query_dim, dim_));
@@ -172,7 +176,7 @@ HGraph::KnnSearch(const DatasetPtr& query,
         }
 
         search_param.ef = std::max(params.ef_search, k);
-        search_param.is_inner_id_allowed = ft;
+        search_param.is_inner_id_allowed = params.use_extra_info_filter ? (FilterPtr)exft : (FilterPtr)ft;
         search_param.topk = static_cast<int64_t>(search_param.ef);
         search_result = this->search_one_graph(query->GetFloat32Vectors(),
                                                this->bottom_graph_,

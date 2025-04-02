@@ -48,6 +48,9 @@ public:
     virtual void
     Prefetch(InnerIdType id) = 0;
 
+    virtual void
+    Release(const uint8_t* extra_info) = 0;
+
 public:
     virtual void
     SetMaxCapacity(InnerIdType capacity) {
@@ -59,7 +62,7 @@ public:
         return this->max_capacity_;
     };
 
-    virtual const char*
+    virtual const uint8_t*
     GetExtraInfoById(InnerIdType id, bool& need_release) const {
         return nullptr;
     }
